@@ -1,0 +1,15 @@
+doctype html
+html
+  head
+    title #{title}
+    link(rel='stylesheet', href='/stylesheets/style.css')
+  body
+    header
+      h1 #{title}
+    .container
+      .main-content
+        block content
+      .sidebar
+        block sidebar
+    footer
+      p All rights reserved at letstory.in

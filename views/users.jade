@@ -1,0 +1,13 @@
+extends layout
+
+block content
+  p Users
+
+  p #{users}
+
+ul.
+  each user in #{users}{
+
+    li= user.first_name
+
+  }
