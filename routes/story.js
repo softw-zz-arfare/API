@@ -81,16 +81,19 @@ router.post('/followed', function(req, res){
       console.log(err);
       res.json({status: false, message: "Something went wrong", error: err.message});
     }else{
-
-      Story.find({"_id" : { $in: user.following}}, function(err, stories){
-        if(err){
-          console.log(err);
-          res.json({status: false, message: "Something went wrong", error: err.message});
-        }else{
-          console.log(stories);
-          res.json({status: true, stories: stories});
-        }
-      });
+      if(user != null){
+        Story.find({"_id" : { $in: user.following}}, function(err, stories){
+          if(err){
+            console.log(err);
+            res.json({status: false, message: "Something went wrong", error: err.message});
+          }else{
+            console.log(stories);
+            res.json({status: true, stories: stories});
+          }
+        });
+      }else{
+        res.json({status: false, message: "Something went wrong. Please re-login and try again.", error: err.message});
+      }
     }
   });
 });
@@ -135,14 +138,6 @@ router.post('/create', function(req, res){
       res.json({status:false, message: "Unable to create story", error: err});
     }else{
 
-      User.findOne({"_id": story.owner_id}, function(err, user){
-        if(err){
-          console.log(err);
-        }else{
-          user.following.push(story._id);
-        }
-      });
-
       var feed = new Feed();
       feed.user_id = story.owner_id;
       feed.story_id = story._id;
@@ -151,9 +146,20 @@ router.post('/create', function(req, res){
       feed.security_mode = 0;
       saveFeed(feed);
 
-      res.json({status: true, story: story});
+      User.findOne({"_id": story.owner_id}, function(err, user){
+        if(err){
+          console.log(err);
+        }else{
+          user.following.push(story._id);
+          user.save();
+          story.owner_name = user.first_name + " " + user.last_name;
+          story.save();
+          res.json({status: true, story: story});
+        }
+      });
     }
   });
+
 });
 
 //Add scene to a story
