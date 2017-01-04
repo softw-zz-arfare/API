@@ -176,32 +176,44 @@ router.post('/:id/scene', function(req, res){
       res.json({status: false, message: "Story not found"})
     }else{
 
-      story.scenes.push({
-        "writer_id": req.body.user_id,
-        "scene_text": req.body.scene_text,
-        "time": Date.now(),
-        "like_count": 0,
-        "dislike_count": 0,
-        "status_approved": false,
-        "position_in_story": story.scenes.length
-      });
 
-      story.save(function(err){
+      User.findOne({"_id": req.body.user_id}, function(err, user){
+        var username = "";
         if(err){
-          console.log(err);
-          res.json({status: false, message: "Unable to add Scene now", error: err.message});
+          username = "An Author";
         }else{
-
-          var feed = new Feed();
-          feed.user_id = req.body.user_id;
-          feed.story_id = story._id;
-          feed.time = Date.now();
-          feed.security_mode = 0;
-          feed.action_type = 4;
-          saveFeed(feed);
-
-          res.json({status: true, scenes: story.scenes});
+          username = user.first_name + " " + user.last_name;
         }
+
+        story.scenes.push({
+          "writer_id": req.body.user_id,
+          "scene_text": req.body.scene_text,
+          "time": Date.now(),
+          "like_count": 0,
+          "dislike_count": 0,
+          "status_approved": false,
+          "position_in_story": story.scenes.length,
+          "writer_name": username
+        });
+
+        story.save(function(err){
+          if(err){
+            console.log(err);
+            res.json({status: false, message: "Unable to add Scene now", error: err.message});
+          }else{
+
+            var feed = new Feed();
+            feed.user_id = req.body.user_id;
+            feed.story_id = story._id;
+            feed.time = Date.now();
+            feed.security_mode = 0;
+            feed.action_type = 4;
+            saveFeed(feed);
+
+            res.json({status: true, scenes: story.scenes});
+          }
+        });
+
       });
     }
   });

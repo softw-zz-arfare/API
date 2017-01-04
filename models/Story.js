@@ -18,7 +18,7 @@ var SceneSchema = new Schema({
   dislike_count: Number,
   status_approved: Boolean,
   position_in_story: Number,
-  owner_name: String
+  writer_name: String
 
 });
 
