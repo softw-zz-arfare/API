@@ -6,7 +6,6 @@ var router = express.Router();
 var Schema = mongoose.Schema;
 
 var User = require('../models/User');
-var Story = require('../models/Story');
 var config = require('../helpers/config');
 
 var ValidationErrors = {
@@ -24,8 +23,8 @@ router.get('/', function(req, res, next) {
 //User login
 router.post('/login', function(req, res){
 
-  console.log('user id for search : ' + req.body.facebook_id);
-  User.findOne({'facebook_id': req.body.facebook_id}, function(err, user){
+  console.log('user id for search : ' + req.body.email_id);
+  User.findOne({'email_id': req.body.email_id}, function(err, user){
     console.log('user found' + user);
     if(err){
       console.log(err);
@@ -36,25 +35,21 @@ router.post('/login', function(req, res){
       res.json({status: false, message: 'User not found'});
     }else{
 
-      user.device.device_type = req.body.device_type;
-      user.device.device_token = req.body.device_token;
-      user.save(function(err){
-        if(err){
-          throw err;
-          res.json({status: false, message: 'Cannot login now. Try again.'});
-        }else{
+      if (user.password === req.body.password) {
 
-          jwt.sign({"u_id": user._id}, config.secret, {expiresIn: '14d'}, function(err, token){
-            if(err){
-              console.log(err);
-              res.json({status: false, message: "Cannot login now. Try again"});
-            }else{
-              console.log("login successful. sending response");
-              res.json({status: true, user: user, token: token});
-            }
-          });
-        }
-      });
+        jwt.sign({"u_id": user._id}, config.secret, {expiresIn: '14d'}, function(err, token){
+          if(err){
+            console.log(err);
+            res.json({status: false, message: "Cannot login now. Try again"});
+          }else{
+            console.log("login successful. sending response");
+            res.json({status: true, user: user, token: token});
+          }
+        });
+
+      }else{
+        res.json({status: false, message: 'Password provided is incorrect'});
+      }
     }
   });
 });
@@ -66,8 +61,8 @@ router.post('/test', function(req, res){
 
 router.post('/register', function(req, res){
 
-  console.log('registering user ' + req.body.facebook_id);
-  User.findOne({'facebook_id': req.body.facebook_id}, function(err, user){
+  console.log('registering user ' + req.body.email_id);
+  User.findOne({'email_id': req.body.email_id}, function(err, user){
     console.log('user found' + user);
     if(err){
       console.log(err);
@@ -75,24 +70,15 @@ router.post('/register', function(req, res){
     }
 
     if(user != null){
-      res.json({status: false, message: 'Already registered. Please try login with Facebook' + user.facebook_id});
+      res.json({status: false, message: 'Already registered. Please try login with email id ' + user.email_id});
     }else{
 
       var _user = new User();
-      console.log('facebook id : ' + req.body.facebook_id);
-      _user.facebook_id = req.body.facebook_id;
+      console.log('email id : ' + req.body.email_id);
+      _user.email_id = req.body.email_id;
       _user.first_name = req.body.first_name;
       _user.last_name = req.body.last_name;
-      _user.type = 2;
-      if(req.body.location != null){
-          _user.location.location_name = req.body.location_name;
-        }
-      _user.profile_pic_url = req.body.profile_pic_url;
-      _user.status = 1;
-      _user.signup_date = Date.now();
-      _user.registration_source = 0;
-      _user.device.device_type = req.body.device_type;
-      _user.device.device_token = req.body.device_token;
+      _user.password = req.body.password;
 
       _user.save(function(err){
         if(err){
@@ -117,7 +103,7 @@ router.post('/register', function(req, res){
               res.json({status: false, message: "Cannot login now. Try again"});
             }else{
               console.log("token : " + token);
-              res.json({status: true, user: user, token: token});
+              res.json({status: true, user: _user, token: token});
             }
           });
         }

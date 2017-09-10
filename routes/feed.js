@@ -28,38 +28,10 @@ router.use(function(req, res, next){
   }
 });
 
-//get all feeds with pagination
-router.post('/all/:page_number', function(req, res){
+router.post("/find", function(req, res){
 
-  Feed.paginate({}, {page: req.params.page_number, limit: 20, sort: {time: -1}}, function(err, results){
-    if(err){
-      console.log(err);
-      res.json({status: false, message: "Something went wrong"});
-    }else{
-      res.json({status: true, results: results});
-    }
-  });
-});
+  res.json({status: true, message: "You are an Authorized user and here is your data"});
 
-//Get feed of stories followed by user
-router.post('/followed/:page_number', function(req, res){
-
-  User.findOne({"_id": req.body.user_id}, function(err, user){
-
-    if(err){
-      console.log(err);
-      res.json({status: false, message: "Something went wrong", error: err.message});
-    }else{
-      Feed.paginate({"story_id": { $in : user.following}}, {page: req.params.page_number, limit: 20, sort: {time: -1}}, function(err, results){
-        if(err){
-          console.log(err);
-          res.json({status: false, message: "Something went wrong"});
-        }else{
-          res.json({status: true, results: results});
-        }
-      });
-    }
-  });
 });
 
 module.exports = router;

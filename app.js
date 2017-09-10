@@ -11,10 +11,8 @@ var jwt = require('jsonwebtoken');
 
 var index = require('./routes/index');
 var users = require('./routes/users');
-var story = require('./routes/story');
-var moderator = require('./routes/moderator');
 var config = require('./helpers/config');
-var feed = require('./routes/feed')
+var feed = require('./routes/feed');
 
 var app = express();
 
@@ -45,8 +43,6 @@ app.use(stylus.middleware(
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', index);
 app.use('/api/v1/users', users);
-app.use('/api/v1/story', story);
-app.use('/api/v1/moderator', moderator);
 app.use('/api/v1/feed', feed);
 
 // catch 404 and forward to error handler
